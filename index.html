@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>calculadHora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+  <!-- Fondo decorativo -->
+  <div class="bg-grid"></div>
+  <div class="bg-glow"></div>
+
+  <!-- Encabezado principal -->
+  <header class="site-header">
+    <div class="header-inner">
+      <span class="header-tag">CALENDARIO 2026</span>
+      <img src="img/logo.svg" alt="logo" class="header-logo" />
+      <span class="header-tag">REGISTRO DE HORAS</span>
+    </div>
+    <div class="header-rate">
+      <label for="globalHourlyRate">TARIFA $</label>
+      <input type="number" id="globalHourlyRate" value="7" step="0.5" min="0" />
+      <span>/HS</span>
+    </div>
+  </header>
+
+  <!-- Contenedor principal de meses -->
+  <main class="calendar-wrapper" id="calendarWrapper">
+    
+    <!-- Los calendarios de Feb y Mar se generan con JS -->
+  </main>
+
+  <!-- Modal para ingresar número -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" id="modalClose" aria-label="Cerrar">✕</button>
+      <p class="modal-label" id="modalLabel">Ingresá las horas</p>
+      <input
+        type="number"
+        class="modal-input"
+        id="modalInput"
+        placeholder="0"
+        min="0"
+        max="24"
+        step="0.5"
+        autocomplete="off"
+      />
+      <div class="modal-actions">
+        <button class="btn-clear" id="modalClear">Borrar</button>
+        <button class="btn-save" id="modalSave">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="js/script.js"></script>
+</body>
+</html>
