@@ -10,10 +10,10 @@
   --card:        #161620;
   --card-hover:  #1c1c2a;
   --border:      #2a2a3a;
-  --border-glow: #3d3d5c;
-  --accent:      #7c6aff;
-  --accent-dim:  #3d3580;
-  --accent-glow: rgba(124, 106, 255, 0.18);
+  --border-glow: #ff7262;
+  --accent:      #ff7262;
+  --accent-dim:  #b35045;
+  --accent-glow: rgba(255, 114, 98, 0.35);
   --green:       #34d399;
   --green-dim:   rgba(52, 211, 153, 0.12);
   --text-1:      #f0f0ff;
@@ -24,9 +24,9 @@
   --radius-lg:   22px;
   --shadow-sm:   0 2px 8px rgba(0,0,0,.45);
   --shadow-md:   0 6px 28px rgba(0,0,0,.6);
-  --shadow-glow: 0 0 30px rgba(124,106,255,.12);
-  --font-display: 'Syne', sans-serif;
-  --font-mono:    'Space Mono', monospace;
+  --shadow-glow: 0 0 30px rgba(255, 114, 98, 0.12);
+  --font-display: 'Helvetica', sans-serif;
+  --font-mono:    'Helvetica Mono', monospace
 }
 
 /* ---------- Reset ---------- */
@@ -62,7 +62,7 @@ body {
   transform: translateX(-50%);
   width: 900px;
   height: 500px;
-  background: radial-gradient(ellipse at center, rgba(124,106,255,.15) 0%, transparent 70%);
+  background: radial-gradient(ellipse at center, rgba(255, 114, 98, 0.15) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -129,7 +129,7 @@ body {
 .header-logo {
   width: 320px;
   height: auto;
-  filter: drop-shadow(0 0 4px rgba(124,106,255,.3));
+  filter: drop-shadow(0 0 4px rgba(255, 114, 98, 0.3));
 }
 @media (max-width: 480px) {
   .header-logo { width: 260px; }
@@ -197,7 +197,7 @@ body {
 }
 
 .month-card:hover {
-  box-shadow: var(--shadow-md), 0 0 48px rgba(124,106,255,.18);
+  box-shadow: var(--shadow-md), 0 0 48px rgba(255, 114, 98, 0.18);
 }
 
 /* Nombre del mes */
@@ -273,7 +273,7 @@ body {
   background: var(--card-hover);
   border-color: var(--border-glow);
   transform: scale(1.04);
-  box-shadow: 0 0 16px rgba(124,106,255,.2);
+  box-shadow: 0 0 16px rgba(255, 114, 98, 0.2);
   z-index: 2;
 }
 
@@ -308,13 +308,13 @@ body {
 
 /* Celda con valor → acento visual */
 .day-cell.has-value {
-  background: rgba(124,106,255,.07);
+  background: rgba(255, 114, 98, 0.07);
   border-color: var(--accent-dim);
 }
 
 .day-cell.has-value .day-value {
   color: var(--accent);
-  text-shadow: 0 0 14px rgba(124,106,255,.5);
+  text-shadow: 0 0 14px rgba(255, 114, 98, 0.5);
 }
 
 /* Animación al guardar (bounce) */
@@ -362,7 +362,7 @@ body {
   letter-spacing: .1em;
   text-transform: uppercase;
   color: var(--text-1);
-  background: linear-gradient(135deg, var(--accent-dim), rgba(124,106,255,.12));
+  background: linear-gradient(135deg, var(--accent-dim), rgba(255, 114, 98, 0.12));
   border: 1px solid var(--accent-dim);
   border-radius: 50px;
   padding: 10px 22px;
@@ -372,7 +372,7 @@ body {
 
 .btn-calc:hover {
   background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-  box-shadow: 0 0 24px rgba(124,106,255,.4);
+  box-shadow: 0 0 24px rgba(255, 114, 98, 0.4);
   transform: translateY(-1px);
 }
 
@@ -500,7 +500,7 @@ body {
   padding: 36px 32px 28px;
   width: min(360px, 90vw);
   position: relative;
-  box-shadow: 0 16px 60px rgba(0,0,0,.7), 0 0 40px rgba(124,106,255,.12);
+  box-shadow: 0 16px 60px rgba(0,0,0,.7), 0 0 40px rgba(255, 114, 98, 0.12);
   transform: scale(.92) translateY(12px);
   transition: transform .25s cubic-bezier(.34,1.56,.64,1);
 }
@@ -556,7 +556,7 @@ body {
 
 .modal-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 20px rgba(124,106,255,.25);
+  box-shadow: 0 0 20px rgba(255, 114, 98, 0.25);
 }
 
 .modal-actions {
@@ -592,7 +592,7 @@ body {
   letter-spacing: .1em;
   text-transform: uppercase;
   color: #fff;
-  background: linear-gradient(135deg, var(--accent), #5a48d4);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
   border: none;
   border-radius: 50px;
   padding: 11px 0;
@@ -601,7 +601,7 @@ body {
 }
 
 .btn-save:hover {
-  box-shadow: 0 0 24px rgba(124,106,255,.45);
+  box-shadow: 0 0 24px rgba(255, 114, 98, 0.45);
   transform: translateY(-1px);
 }
 
