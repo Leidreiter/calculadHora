@@ -4,95 +4,37 @@
  */
 
 // ─── Configuración de meses ───────────────────────────────────────────────────
-const MONTHS = [
-  {
-    key: 'ene2026',
-    name: 'Enero',
-    year: 2026,
-    month: 0,          // 0-indexed: enero = 0
-    totalDays: 31,     // 2026 no es bisiesto
-  },
-  {
-    key: 'feb2026',
-    name: 'Febrero',
-    year: 2026,
-    month: 1,          // 0-indexed: enero = 0
-    totalDays: 28,     // 2026 no es bisiesto
-  },
-  {
-    key: 'mar2026',
-    name: 'Marzo',
-    year: 2026,
-    month: 2,
-    totalDays: 31,
-  },
-  {
-    key: 'abr2026',
-    name: 'Abril',
-    year: 2026,
-    month: 3,
-    totalDays: 30,
-  },
-  {
-    key: 'may2026',
-    name: 'Mayo',
-    year: 2026,
-    month: 4,
-    totalDays: 31,
-  },
-  {
-    key: 'jun2026',
-    name: 'Junio',
-    year: 2026,
-    month: 5,
-    totalDays: 30,
-  },
-  {
-    key: 'jul2026',
-    name: 'Julio',
-    year: 2026,
-    month: 6,
-    totalDays: 31,
-  },
-  {
-    key: 'ago2026',
-    name: 'Agosto',
-    year: 2026,
-    month: 7,
-    totalDays: 31,
-  },
-  {
-    key: 'sep2026',
-    name: 'Septiembre',
-    year: 2026,
-    month: 8,
-    totalDays: 30,
-  },
-  {
-    key: 'oct2026',
-    name: 'Octubre',
-    year: 2026,
-    month: 9,
-    totalDays: 31,
-  },
-  {
-    key: 'nov2026',
-    name: 'Noviembre',
-    year: 2026,
-    month: 10,
-    totalDays: 30,
-  },
-  {
-    key: 'dic2026',
-    name: 'Diciembre',
-    year: 2026,
-    month: 11,
-    totalDays: 31,
-  },
-];
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MONTH_KEYS  = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+let currentYear = 2026;
+
+function buildMonths(year) {
+  return Array.from({ length: 12 }, (_, i) => ({
+    key: `${MONTH_KEYS[i]}${year}`,
+    name: MONTH_NAMES[i],
+    year: year,
+    month: i,
+    totalDays: new Date(year, i + 1, 0).getDate(),
+  }));
+}
+
+let MONTHS = buildMonths(currentYear);
 
 const WEEKDAY_LABELS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const LS_PREFIX = 'calculadHora_';   // Prefijo para LocalStorage
+
+const CURRENCIES = {
+  USD: { symbol: 'US$', locale: 'en-US' },
+  EUR: { symbol: '€', locale: 'es-ES' },
+  ARS: { symbol: '$', locale: 'es-AR' },
+  BRL: { symbol: 'R$', locale: 'pt-BR' },
+  CLP: { symbol: '$', locale: 'es-CL' },
+  COP: { symbol: '$', locale: 'es-CO' },
+  MXN: { symbol: '$', locale: 'es-MX' },
+  PEN: { symbol: 'S/', locale: 'es-PE' },
+  UYU: { symbol: '$', locale: 'es-UY' },
+  VES: { symbol: 'Bs.', locale: 'es-VE' },
+};
 
 // ─── Estado global del modal ──────────────────────────────────────────────────
 let activeCell = null;  // { monthKey, day, element }
@@ -161,7 +103,7 @@ function buildMonthCard(monthConfig) {
 
   // Celdas de días reales
   for (let day = 1; day <= totalDays; day++) {
-    const cell = buildDayCell(key, day);
+    const cell = buildDayCell(monthConfig, day);
     grid.appendChild(cell);
   }
 
@@ -183,13 +125,13 @@ function buildMonthCard(monthConfig) {
   const btnCapture = document.createElement('button');
   btnCapture.className = 'btn-capture';
   btnCapture.setAttribute('aria-label', `Capturar ${name}`);
-  btnCapture.innerHTML = '<i class="fa-solid fa-camera"></i> Captura';
+  btnCapture.innerHTML = '<i aria-hidden="true" class="fa-solid fa-camera"></i> Captura';
   btnCapture.addEventListener('click', () => captureCard(card, name, year));
 
   const btnDelete = document.createElement('button');
   btnDelete.className = 'btn-delete';
   btnDelete.setAttribute('aria-label', `Borrar registros de ${name}`);
-  btnDelete.innerHTML = '<i class="fa-solid fa-trash-can"></i> Borrar';
+  btnDelete.innerHTML = '<i aria-hidden="true" class="fa-solid fa-trash-can"></i> Borrar';
   btnDelete.addEventListener('click', () => deleteMonth(key, totalDays, card, resultEl));
 
   btnGroup.appendChild(btnCalc);
@@ -213,10 +155,12 @@ function buildMonthCard(monthConfig) {
 
 /**
  * Crea una celda individual para un día.
- * @param {string} monthKey  - Clave del mes (ej: 'feb2026')
- * @param {number} day       - Número del día
+ * @param {Object} monthConfig  - Configuración del mes
+ * @param {number} day         - Número del día
  */
-function buildDayCell(monthKey, day) {
+function buildDayCell(monthConfig, day) {
+  const { key: monthKey, year, month } = monthConfig;
+
   const cell = document.createElement('div');
   cell.className = 'day-cell';
   cell.setAttribute('role', 'button');
@@ -225,10 +169,17 @@ function buildDayCell(monthKey, day) {
   cell.dataset.month = monthKey;
   cell.dataset.day = day;
 
+  // Resaltar el día actual
+  const today = new Date();
+  if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === day) {
+    cell.classList.add('today');
+  }
+
   // Número del día (pequeño, decorativo)
   const dayNum = document.createElement('span');
   dayNum.className = 'day-number';
   dayNum.textContent = day;
+  dayNum.setAttribute('aria-hidden', 'true');
   cell.appendChild(dayNum);
 
   // Valor del usuario
@@ -239,8 +190,13 @@ function buildDayCell(monthKey, day) {
   // Cargar desde LocalStorage
   const stored = getValue(monthKey, day);
   if (stored !== null) {
-    dayVal.textContent = stored;
-    cell.classList.add('has-value');
+    if (stored === 'LIBRE') {
+      dayVal.innerHTML = '<i aria-hidden="true" class="fa-solid fa-moon"></i>';
+      cell.classList.add('is-libre');
+    } else {
+      dayVal.textContent = stored;
+      cell.classList.add('has-value');
+    }
   }
 
   // Eventos
@@ -249,7 +205,26 @@ function buildDayCell(monthKey, day) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       openModal(monthKey, day, cell);
+      return;
     }
+
+    // Navegación con flechas
+    const grid = cell.closest('.days-grid');
+    if (!grid) return;
+    const currentDay = parseInt(cell.dataset.day);
+    let targetDay;
+
+    switch (e.key) {
+      case 'ArrowLeft':  targetDay = currentDay - 1; break;
+      case 'ArrowRight': targetDay = currentDay + 1; break;
+      case 'ArrowUp':    targetDay = currentDay - 7; break;
+      case 'ArrowDown':  targetDay = currentDay + 7; break;
+      default: return;
+    }
+
+    e.preventDefault();
+    const targetCell = grid.querySelector(`.day-cell:not(.empty)[data-day="${targetDay}"]`);
+    if (targetCell) targetCell.focus();
   });
 
   return cell;
@@ -260,9 +235,11 @@ function buildDayCell(monthKey, day) {
 const overlay  = document.getElementById('modalOverlay');
 const modalInput = document.getElementById('modalInput');
 const modalLabel = document.getElementById('modalLabel');
+const modalBox = document.getElementById('modalBox');
 const btnSave  = document.getElementById('modalSave');
 const btnClear = document.getElementById('modalClear');
 const btnClose = document.getElementById('modalClose');
+const btnLibre = document.getElementById('modalLibre');
 
 /**
  * Abre el modal para editar un día.
@@ -276,9 +253,13 @@ function openModal(monthKey, day, cellEl) {
   modalLabel.textContent = `${mConfig.name} ${day} — horas trabajadas`;
 
   modalInput.value = stored !== null ? stored : '';
+  modalInput.style.borderColor = '';
+  modalInput.style.boxShadow = '';
   overlay.classList.add('open');
   // Foco con pequeño delay para que la transición sea suave
   setTimeout(() => modalInput.focus(), 120);
+  // Enfocar el primer elemento accesible del modal
+  setTimeout(() => trapFocus(modalBox), 130);
 }
 
 /** Cierra el modal sin guardar. */
@@ -286,6 +267,7 @@ function closeModal() {
   overlay.classList.remove('open');
   activeCell = null;
   modalInput.value = '';
+  releaseFocusTrap();
 }
 
 /** Guarda el valor del modal en la celda y en LocalStorage. */
@@ -296,6 +278,19 @@ function saveModal() {
   const rawValue = modalInput.value.trim();
   const valEl = element.querySelector('.day-value');
 
+  // Validar que no exceda 24 horas
+  const num = parseFloat(rawValue);
+  if (rawValue !== '' && !isNaN(num) && num > 24) {
+    modalInput.style.borderColor = '#f87171';
+    modalInput.style.boxShadow = '0 0 20px rgba(248, 113, 113, 0.3)';
+    modalInput.focus();
+    setTimeout(() => {
+      modalInput.style.borderColor = '';
+      modalInput.style.boxShadow = '';
+    }, 1200);
+    return;
+  }
+
   // Guardar en LS
   setValue(monthKey, day, rawValue);
 
@@ -303,6 +298,7 @@ function saveModal() {
   valEl.textContent = rawValue;
 
   if (rawValue !== '') {
+    element.classList.remove('is-libre');
     element.classList.add('has-value');
     // Animación bounce en el valor
     valEl.classList.remove('animate');
@@ -319,7 +315,7 @@ function saveModal() {
     valEl.addEventListener('animationend', () => valEl.classList.remove('animate'), { once: true });
     element.addEventListener('animationend', () => element.classList.remove('flash'), { once: true });
   } else {
-    element.classList.remove('has-value');
+    element.classList.remove('is-libre', 'has-value');
     valEl.textContent = '';
   }
 
@@ -335,7 +331,7 @@ function clearModal() {
     setValue(monthKey, day, '');
     const valEl = element.querySelector('.day-value');
     valEl.textContent = '';
-    element.classList.remove('has-value');
+    element.classList.remove('is-libre', 'has-value');
   }
   closeModal();
 }
@@ -366,11 +362,12 @@ function calcHours(monthKey, totalDays, resultEl) {
   const formattedHours = Number.isInteger(total) ? total : total.toFixed(2);
   const payment = total * currentRate;
   const formattedPayment = Number.isInteger(payment) ? payment : payment.toFixed(2);
+  const currencySymbol = CURRENCIES[document.getElementById('currencySelect').value]?.symbol || '$';
 
   resultEl.innerHTML =
-    `<i class="fa-regular fa-clock"></i> ${formattedHours} hs` +
-    `<span class="result-divider">·</span>` +
-    `<i class="fa-solid fa-dollar-sign"></i> ${formattedPayment}`;
+    `<i aria-hidden="true" class="fa-regular fa-clock"></i> ${formattedHours} hs` +
+    `<span class="result-divider" aria-hidden="true">·</span>` +
+    `<i aria-hidden="true" class="fa-solid fa-dollar-sign"></i> ${currencySymbol} ${formattedPayment}`;
 
   // Mostrar con transición
   resultEl.classList.remove('visible');
@@ -404,16 +401,172 @@ function deleteMonth(monthKey, totalDays, cardEl, resultEl) {
   resultEl.innerHTML = '';
 }
 
+// ─── Exportación de datos ──────────────────────────────────────────────────────
+
+function exportData() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith(LS_PREFIX)) {
+      data[key] = localStorage.getItem(key);
+    }
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `calculadhora_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Importación de datos ──────────────────────────────────────────────────────
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let count = 0;
+      Object.keys(data).forEach(key => {
+        if (key.startsWith(LS_PREFIX)) {
+          localStorage.setItem(key, data[key]);
+          count++;
+        }
+      });
+      alert(`Se importaron ${count} registros correctamente. La página se recargará para reflejar los cambios.`);
+      location.reload();
+    } catch {
+      alert('Error al importar: el archivo no tiene un formato válido.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ─── Resumen anual ─────────────────────────────────────────────────────────────
+
+function calcAnnualSummary() {
+  const rate = parseFloat(document.getElementById('globalHourlyRate').value) || 0;
+  const currencySymbol = CURRENCIES[document.getElementById('currencySelect').value]?.symbol || '$';
+  let totalHours = 0;
+
+  MONTHS.forEach(month => {
+    for (let day = 1; day <= month.totalDays; day++) {
+      const val = getValue(month.key, day);
+      if (val !== null && val.trim() !== '') {
+        const num = parseFloat(val);
+        if (!isNaN(num)) totalHours += num;
+      }
+    }
+  });
+
+  const totalPayment = totalHours * rate;
+  const monthlyAvg = totalHours / MONTHS.length;
+
+  document.getElementById('summaryHours').textContent =
+    (Number.isInteger(totalHours) ? totalHours : totalHours.toFixed(2)) + ' hs';
+  document.getElementById('summaryEarnings').textContent =
+    `${currencySymbol} ${Number.isInteger(totalPayment) ? totalPayment : totalPayment.toFixed(2)}`;
+  document.getElementById('summaryAverage').textContent =
+    (Number.isInteger(monthlyAvg) ? monthlyAvg : monthlyAvg.toFixed(2)) + ' hs';
+}
+
+// ─── Actualizar display de moneda ──────────────────────────────────────────────
+
+function updateCurrencyDisplay() {
+  const currency = document.getElementById('currencySelect').value;
+  const symbol = CURRENCIES[currency]?.symbol || '$';
+  document.getElementById('rateUnit').textContent = symbol;
+  localStorage.setItem(`${LS_PREFIX}currency`, currency);
+}
+
+// ─── Toast ─────────────────────────────────────────────────────────────────────
+
+function showToast(message, duration = 2000) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// ─── Marcar día como libre ──────────────────────────────────────────────────────
+
+function saveModalLibre() {
+  if (!activeCell) return;
+  const { monthKey, day, element } = activeCell;
+  const valEl = element.querySelector('.day-value');
+
+  setValue(monthKey, day, 'LIBRE');
+  valEl.innerHTML = '<i aria-hidden="true" class="fa-solid fa-moon"></i>';
+  element.classList.remove('has-value');
+  element.classList.add('is-libre');
+
+  closeModal();
+}
+
+// ─── Focus Trap ────────────────────────────────────────────────────────────────
+
+let focusTrapHandler = null;
+
+function trapFocus(container) {
+  const focusable = container.querySelectorAll(
+    'button, input, [tabindex]:not([tabindex="-1"])'
+  );
+  if (!focusable.length) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (focusTrapHandler) {
+    document.removeEventListener('keydown', focusTrapHandler);
+  }
+
+  focusTrapHandler = (e) => {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      }
+    } else {
+      if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
+  document.addEventListener('keydown', focusTrapHandler);
+}
+
+function releaseFocusTrap() {
+  if (focusTrapHandler) {
+    document.removeEventListener('keydown', focusTrapHandler);
+    focusTrapHandler = null;
+  }
+}
+
 // ─── Event Listeners del Modal ────────────────────────────────────────────────
 
 btnSave.addEventListener('click', saveModal);
 btnClear.addEventListener('click', clearModal);
 btnClose.addEventListener('click', closeModal);
+btnLibre.addEventListener('click', saveModalLibre);
 
-// Guardar con Enter dentro del input
+// Guardar con Enter / Libre con L / Cerrar con Escape
 modalInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') saveModal();
   if (e.key === 'Escape') closeModal();
+  if (e.key === 'l' || e.key === 'L') saveModalLibre();
 });
 
 // Cerrar al hacer clic fuera del modal
@@ -430,7 +583,7 @@ function captureCard(cardEl, monthName, year) {
   const btn = cardEl.querySelector('.btn-capture');
 
   btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+  btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-spinner fa-spin"></i> Procesando...';
 
   html2canvas(cardEl, {
     backgroundColor: '#161620',
@@ -444,14 +597,42 @@ function captureCard(cardEl, monthName, year) {
     link.click();
 
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Guardado!';
+    btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-circle-check"></i> Guardado!';
     setTimeout(() => {
-      btn.innerHTML = '<i class="fa-solid fa-camera"></i> Captura';
+      btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-camera"></i> Captura';
     }, 2000);
   }).catch(() => {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-camera"></i> Captura';
+    btn.innerHTML = '<i aria-hidden="true" class="fa-solid fa-camera"></i> Captura';
   });
+}
+
+// ─── Cambio de año ────────────────────────────────────────────────────────────
+
+/**
+ * Reconstruye todos los calendarios para el año indicado.
+ */
+function rebuildCalendar(newYear) {
+  currentYear = newYear;
+  MONTHS = buildMonths(currentYear);
+
+  const wrapper = document.getElementById('calendarWrapper');
+  wrapper.innerHTML = '';
+
+  MONTHS.forEach(monthConfig => {
+    const card = buildMonthCard(monthConfig);
+    wrapper.appendChild(card);
+  });
+
+  document.getElementById('headerYearTag').textContent = `CALENDARIO ${currentYear}`;
+  document.getElementById('yearDisplay').textContent = currentYear;
+  document.getElementById('yearPrev').disabled = currentYear <= 2026;
+
+  document.getElementById('summaryHours').textContent = '0';
+  document.getElementById('summaryEarnings').textContent = '$ 0';
+  document.getElementById('summaryAverage').textContent = '0 hs';
+
+  showToast(`Año ${currentYear}`);
 }
 
 // ─── Inicialización ───────────────────────────────────────────────────────────
@@ -462,6 +643,14 @@ function captureCard(cardEl, monthName, year) {
 function init() {
   const wrapper = document.getElementById('calendarWrapper');
   const rateInput = document.getElementById('globalHourlyRate');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const currencySelect = document.getElementById('currencySelect');
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const importFileInput = document.getElementById('importFileInput');
+  const calcSummaryBtn = document.getElementById('calcSummaryBtn');
+  const yearPrev = document.getElementById('yearPrev');
+  const yearNext = document.getElementById('yearNext');
 
   // Cargar tarifa guardada
   const savedRate = localStorage.getItem(`${LS_PREFIX}global_rate`);
@@ -469,14 +658,55 @@ function init() {
     rateInput.value = savedRate;
   }
 
+  // Cargar moneda guardada
+  const savedCurrency = localStorage.getItem(`${LS_PREFIX}currency`);
+  if (savedCurrency && CURRENCIES[savedCurrency]) {
+    currencySelect.value = savedCurrency;
+    updateCurrencyDisplay();
+  }
+
   MONTHS.forEach(monthConfig => {
     const card = buildMonthCard(monthConfig);
     wrapper.appendChild(card);
   });
 
+  // Ocultar loading spinner
+  if (loadingSpinner) loadingSpinner.style.display = 'none';
+
   // Escuchar cambios en la tarifa para guardar
   rateInput.addEventListener('change', () => {
     localStorage.setItem(`${LS_PREFIX}global_rate`, rateInput.value);
+    showToast('Tarifa guardada');
+  });
+
+  // Escuchar cambios en la moneda
+  currencySelect.addEventListener('change', updateCurrencyDisplay);
+
+  // Exportar datos
+  exportBtn.addEventListener('click', exportData);
+
+  // Importar datos
+  importBtn.addEventListener('click', () => importFileInput.click());
+  importFileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) {
+      importData(e.target.files[0]);
+      e.target.value = '';
+    }
+  });
+
+  // Calcular resumen anual
+  calcSummaryBtn.addEventListener('click', calcAnnualSummary);
+
+  // Year stepper
+  yearPrev.disabled = true;
+
+  yearPrev.addEventListener('click', () => {
+    const newYear = currentYear - 1;
+    if (newYear >= 2026) rebuildCalendar(newYear);
+  });
+
+  yearNext.addEventListener('click', () => {
+    rebuildCalendar(currentYear + 1);
   });
 }
 
